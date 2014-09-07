@@ -36,3 +36,12 @@
 #pragma config(Servo,  srvo_S2_C4_6,    servo24,              tServoNone)
 
 #include "includes.h"
+
+task main()
+{
+	initializeGlobalVariables();
+	Joystick_WaitForStart();
+
+	while (true) {
+	}
+}
