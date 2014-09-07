@@ -1,47 +1,65 @@
-#pragma config(Hubs,  S1, HTMotor,  HTMotor,  HTMotor,  HTMotor)
-#pragma config(Hubs,  S2, HTServo,  HTServo,  HTServo,  HTServo)
+#pragma config(Hubs,  S1, HTMotor,  HTMotor,  HTMotor,  HTServo)
 #pragma config(Sensor, S1,     ,               sensorI2CMuxController)
-#pragma config(Sensor, S2,     ,               sensorI2CMuxController)
-#pragma config(Motor,  mtr_S1_C1_1,     motor_LA,      tmotorTetrix, openLoop, encoder)
-#pragma config(Motor,  mtr_S1_C1_2,     motor_LB,      tmotorTetrix, openLoop)
-#pragma config(Motor,  mtr_S1_C2_1,     motor_RA,      tmotorTetrix, openLoop, encoder)
-#pragma config(Motor,  mtr_S1_C2_2,     motor_RB,      tmotorTetrix, openLoop)
-#pragma config(Motor,  mtr_S1_C3_1,     motor_pickup,  tmotorTetrix, openLoop)
-#pragma config(Motor,  mtr_S1_C3_2,     motor_lift_A,  tmotorTetrix, openLoop, encoder)
-#pragma config(Motor,  mtr_S1_C4_1,     motor_lift_B,  tmotorTetrix, openLoop)
-#pragma config(Motor,  mtr_S1_C4_2,     motor_lift_C,  tmotorTetrix, openLoop)
-#pragma config(Servo,  srvo_S2_C1_1,    servo1,               tServoNone)
-#pragma config(Servo,  srvo_S2_C1_2,    servo2,               tServoNone)
-#pragma config(Servo,  srvo_S2_C1_3,    servo3,               tServoNone)
-#pragma config(Servo,  srvo_S2_C1_4,    servo4,               tServoNone)
-#pragma config(Servo,  srvo_S2_C1_5,    servo5,               tServoNone)
-#pragma config(Servo,  srvo_S2_C1_6,    servo6,               tServoNone)
-#pragma config(Servo,  srvo_S2_C2_1,    servo7,               tServoNone)
-#pragma config(Servo,  srvo_S2_C2_2,    servo8,               tServoNone)
-#pragma config(Servo,  srvo_S2_C2_3,    servo9,               tServoNone)
-#pragma config(Servo,  srvo_S2_C2_4,    servo10,              tServoNone)
-#pragma config(Servo,  srvo_S2_C2_5,    servo11,              tServoNone)
-#pragma config(Servo,  srvo_S2_C2_6,    servo12,              tServoNone)
-#pragma config(Servo,  srvo_S2_C3_1,    servo13,              tServoNone)
-#pragma config(Servo,  srvo_S2_C3_2,    servo14,              tServoNone)
-#pragma config(Servo,  srvo_S2_C3_3,    servo15,              tServoNone)
-#pragma config(Servo,  srvo_S2_C3_4,    servo16,              tServoNone)
-#pragma config(Servo,  srvo_S2_C3_5,    servo17,              tServoNone)
-#pragma config(Servo,  srvo_S2_C3_6,    servo18,              tServoNone)
-#pragma config(Servo,  srvo_S2_C4_1,    servo19,              tServoNone)
-#pragma config(Servo,  srvo_S2_C4_2,    servo20,              tServoNone)
-#pragma config(Servo,  srvo_S2_C4_3,    servo21,              tServoNone)
-#pragma config(Servo,  srvo_S2_C4_4,    servo22,              tServoNone)
-#pragma config(Servo,  srvo_S2_C4_5,    servo23,              tServoNone)
-#pragma config(Servo,  srvo_S2_C4_6,    servo24,              tServoNone)
+#pragma config(Motor,  mtr_S1_C1_1,     motor_L,       tmotorTetrix, openLoop)
+#pragma config(Motor,  mtr_S1_C1_2,     motor_R,       tmotorTetrix, openLoop)
+#pragma config(Motor,  mtr_S1_C2_1,     motor_pickup,  tmotorTetrix, openLoop)
+#pragma config(Motor,  mtr_S1_C2_2,     motor_dump,    tmotorTetrix, openLoop)
+#pragma config(Motor,  mtr_S1_C3_1,     motor_lift,    tmotorTetrix, openLoop)
+#pragma config(Motor,  mtr_S1_C3_2,     motor_spare,   tmotorTetrix, openLoop)
+#pragma config(Servo,  srvo_S1_C4_1,    servo_dump,           tServoStandard)
+#pragma config(Servo,  srvo_S1_C4_2,    servo2,               tServoNone)
+#pragma config(Servo,  srvo_S1_C4_3,    servo3,               tServoNone)
+#pragma config(Servo,  srvo_S1_C4_4,    servo4,               tServoNone)
+#pragma config(Servo,  srvo_S1_C4_5,    servo5,               tServoNone)
+#pragma config(Servo,  srvo_S1_C4_6,    servo6,               tServoNone)
 
 #include "includes.h"
 
 task main()
 {
 	initializeGlobalVariables();
+
+	int power_L = 0;
+	int power_R = 0;
+	int power_lift = 0;
+	int power_pickup = 0;
+	int power_dump = 0;
+	const int dump_motor_power = 100;
+
+	const int servo_dump_open = 0;
+	const int servo_dump_closed = 255;
+	int servo_dump_pos = servo_dump_open;
+
+	bool isPickupOn = false;
+
 	Joystick_WaitForStart();
 
 	while (true) {
+		Joystick_UpdateData();
+
+		power_L = Joystick_GenericInput(JOYSTICK_L, AXIS_Y, CONTROLLER_1);
+		power_R = Joystick_GenericInput(JOYSTICK_R, AXIS_Y, CONTROLLER_1);
+		power_lift = Joystick_GenericInput(JOYSTICK_L, AXIS_Y, CONTROLLER_2);
+		if (Joystick_ButtonReleased(BUTTON_A, CONTROLLER_1)) {
+			isPickupOn = !isPickupOn;
+		}
+		if (isPickupOn) {
+			power_pickup = 100;
+		} else {
+			power_pickup = 0;
+		}
+		if (Joystick_Direction(DIRECTION_F, CONTROLLER_1)) {
+			power_dump = dump_motor_power;
+		} else if (Joystick_Direction(DIRECTION_B, CONTROLLER_1)) {
+			power_dump = -dump_motor_power;
+		}
+
+		Motor_SetPower(power_L, motor_L);
+		Motor_SetPower(power_R, motor_R);
+		Motor_SetPower(power_lift, motor_lift);
+		Motor_SetPower(power_pickup, motor_pickup);
+		Motor_SetPower(power_dump, motor_dump);
+
+		Servo_SetPosition(servo_dump, servo_dump_pos);
 	}
 }
