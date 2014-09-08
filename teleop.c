@@ -1,17 +1,11 @@
-#pragma config(Hubs,  S1, HTMotor,  HTMotor,  HTMotor,  HTServo)
+#pragma config(Hubs,  S1, HTMotor,  HTMotor,  HTMotor,  none)
 #pragma config(Sensor, S1,     ,               sensorI2CMuxController)
 #pragma config(Motor,  mtr_S1_C1_1,     motor_L,       tmotorTetrix, openLoop)
 #pragma config(Motor,  mtr_S1_C1_2,     motor_R,       tmotorTetrix, openLoop)
 #pragma config(Motor,  mtr_S1_C2_1,     motor_pickup,  tmotorTetrix, openLoop)
-#pragma config(Motor,  mtr_S1_C2_2,     motor_dump,    tmotorTetrix, openLoop)
-#pragma config(Motor,  mtr_S1_C3_1,     motor_lift,    tmotorTetrix, openLoop)
-#pragma config(Motor,  mtr_S1_C3_2,     motor_spare,   tmotorTetrix, openLoop)
-#pragma config(Servo,  srvo_S1_C4_1,    servo_dump,           tServoStandard)
-#pragma config(Servo,  srvo_S1_C4_2,    servo2,               tServoNone)
-#pragma config(Servo,  srvo_S1_C4_3,    servo3,               tServoNone)
-#pragma config(Servo,  srvo_S1_C4_4,    servo4,               tServoNone)
-#pragma config(Servo,  srvo_S1_C4_5,    servo5,               tServoNone)
-#pragma config(Servo,  srvo_S1_C4_6,    servo6,               tServoNone)
+#pragma config(Motor,  mtr_S1_C2_2,     motor_dump,    tmotorTetrix, openLoop, reversed)
+#pragma config(Motor,  mtr_S1_C3_1,     motor_lift_A,  tmotorTetrix, openLoop)
+#pragma config(Motor,  mtr_S1_C3_2,     motor_lift_B,  tmotorTetrix, openLoop)
 
 #include "includes.h"
 
@@ -26,9 +20,9 @@ task main()
 	int power_dump = 0;
 	const int dump_motor_power = 100;
 
-	const int servo_dump_open = 0;
-	const int servo_dump_closed = 255;
-	int servo_dump_pos = servo_dump_open;
+	//const int servo_dump_open = 0;
+	//const int servo_dump_closed = 255;
+	//int servo_dump_pos = servo_dump_open;
 
 	bool isPickupOn = false;
 
@@ -52,14 +46,17 @@ task main()
 			power_dump = dump_motor_power;
 		} else if (Joystick_Direction(DIRECTION_B, CONTROLLER_1)) {
 			power_dump = -dump_motor_power;
+		} else {
+			power_dump = 0;
 		}
 
 		Motor_SetPower(power_L, motor_L);
 		Motor_SetPower(power_R, motor_R);
-		Motor_SetPower(power_lift, motor_lift);
+		Motor_SetPower(power_lift, motor_lift_A);
+		Motor_SetPower(power_lift, motor_lift_B);
 		Motor_SetPower(power_pickup, motor_pickup);
 		Motor_SetPower(power_dump, motor_dump);
 
-		Servo_SetPosition(servo_dump, servo_dump_pos);
+		//Servo_SetPosition(servo_dump, servo_dump_pos);
 	}
 }
